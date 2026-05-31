@@ -1,0 +1,398 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta name="x-poe-datastore-behavior" content="local_only"><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小火箭起飛（開合跳）！</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for a playful, preschool-friendly look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&amp;family=Noto+Sans+TC:wght@400;700;900&amp;display=swap" rel="stylesheet">
+    <!-- FontAwesome for cute icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+            background-color: #FFFDF0;
+            background-image: radial-gradient(#FFDEE9 1.5px, transparent 1.5px), radial-gradient(#FFDEE9 1.5px, #FFFDF0 1.5px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+        }
+        .bouncy {
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .wiggle:hover {
+            animation: wiggle 0.5s ease-in-out;
+        }
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+        .step-card {
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .step-card:hover {
+            transform: scale(1.03) translateY(-5px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-4 md:p-8 text-slate-800">
+
+    <!-- Header Section -->
+    <header class="text-center my-6 max-w-2xl">
+        <div class="inline-block bg-yellow-300 text-yellow-800 text-xs md:text-sm font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-3 shadow-sm border-2 border-yellow-400 bouncy">
+            <i class="fa-solid fa-rocket text-amber-500 mr-1"></i> 大家一起動起來！ <i class="fa-solid fa-rocket text-amber-500 ml-1"></i>
+        </div>
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-rose-500 tracking-wide drop-shadow-[0_3px_0_rgba(244,63,94,0.2)]">
+            小火箭起飛（開合跳）
+        </h1>
+        <p class="text-lg md:text-xl text-teal-600 font-bold mt-2">
+            跟著可愛的步驟，像閃亮的小火箭一樣快樂彈跳起飛吧！ 🌟
+        </p>
+    </header>
+
+    <!-- Main Interactive / Display Area -->
+    <main class="w-full max-w-5xl flex-grow flex flex-col items-center justify-center gap-8 my-4">
+        
+        <!-- Interactive Character Preview -->
+        <div class="bg-white border-4 border-dashed border-teal-300 rounded-3xl p-6 w-full max-w-md shadow-xl flex flex-col items-center justify-center relative overflow-hidden bg-opacity-90">
+            <!-- Decorative Background Shapes -->
+            <div class="absolute -top-6 -left-6 w-16 h-16 bg-pink-200 rounded-full opacity-50"></div>
+            <div class="absolute -bottom-6 -right-6 w-20 h-20 bg-yellow-200 rounded-full opacity-50"></div>
+            
+            <h3 class="text-xl font-bold text-purple-600 mb-4 z-10 flex items-center gap-2">
+                <i class="fa-solid fa-wand-magic-sparkles animate-pulse"></i> 點擊按鈕試試看！
+            </h3>
+            
+            <!-- Cartoon Character Canvas / Vector Container -->
+            <div class="w-64 h-64 flex items-center justify-center relative z-10">
+                <svg id="character-svg" viewBox="0 0 200 200" class="w-full h-full drop-shadow-md">
+                    <!-- Ground/Shadow -->
+                    <ellipse cx="100" cy="180" rx="45" ry="8" fill="#e2e8f0"></ellipse>
+                    
+                    <!-- Character Group -->
+                    <g id="character-body" class="transition-all duration-500 ease-in-out">
+                        <!-- Head -->
+                        <circle cx="100" cy="70" r="25" fill="#FFD0A1" stroke="#475569" stroke-width="4"></circle>
+                        <!-- Cheeks -->
+                        <circle cx="82" cy="75" r="4" fill="#FFA0A0" opacity="0.8"></circle>
+                        <circle cx="118" cy="75" r="4" fill="#FFA0A0" opacity="0.8"></circle>
+                        <!-- Eyes -->
+                        <circle id="eye-l" cx="92" cy="68" r="3" fill="#334155"></circle>
+                        <circle id="eye-r" cx="108" cy="68" r="3" fill="#334155"></circle>
+                        <!-- Smile -->
+                        <path id="mouth" d="M 92 78 Q 100 88 108 78" fill="none" stroke="#334155" stroke-width="3" stroke-linecap="round"></path>
+                        <!-- Cute Cap/Hair -->
+                        <path d="M 77 60 Q 100 40 123 60 Z" fill="#F43F5E" stroke="#475569" stroke-width="4"></path>
+                        <circle cx="100" cy="45" r="6" fill="#FBBF24" stroke="#475569" stroke-width="3"></circle>
+
+                        <!-- Torso -->
+                        <path id="torso" d="M 85 95 L 115 95 L 110 140 L 90 140 Z" fill="#3B82F6" stroke="#475569" stroke-width="4" stroke-linejoin="round"></path>
+                        <!-- Star on Shirt -->
+                        <polygon points="100,105 103,112 110,112 105,116 107,123 100,119 93,123 95,116 90,112 97,112" fill="#FBBF24"></polygon>
+
+                        <!-- Left Arm -->
+                        <path id="arm-l" d="M 85 100 L 60 115" fill="none" stroke="#FFD0A1" stroke-width="12" stroke-linecap="round"></path>
+                        <path id="arm-l-sleeve" d="M 85 100 L 75 106" fill="none" stroke="#3B82F6" stroke-width="14" stroke-linecap="round"></path>
+
+                        <!-- Right Arm -->
+                        <path id="arm-r" d="M 115 100 L 140 115" fill="none" stroke="#FFD0A1" stroke-width="12" stroke-linecap="round"></path>
+                        <path id="arm-r-sleeve" d="M 115 100 L 125 106" fill="none" stroke="#3B82F6" stroke-width="14" stroke-linecap="round"></path>
+
+                        <!-- Left Leg -->
+                        <path id="leg-l" d="M 92 140 L 92 175" fill="none" stroke="#FFD0A1" stroke-width="14" stroke-linecap="round"></path>
+                        <!-- Left Shoe -->
+                        <path id="shoe-l" d="M 85 175 L 95 175" fill="none" stroke="#10B981" stroke-width="10" stroke-linecap="round"></path>
+
+                        <!-- Right Leg -->
+                        <path id="leg-r" d="M 108 140 L 108 175" fill="none" stroke="#FFD0A1" stroke-width="14" stroke-linecap="round"></path>
+                        <!-- Right Shoe -->
+                        <path id="shoe-r" d="M 105 175 L 115 175" fill="none" stroke="#10B981" stroke-width="10" stroke-linecap="round"></path>
+                    </g>
+                </svg>
+            </div>
+
+            <!-- Controller Buttons -->
+            <div class="flex flex-wrap gap-2 justify-center mt-4 w-full">
+                <button onclick="playStep('reset')" id="btn-step-reset" class="btn-step px-4 py-2 bg-indigo-400 hover:bg-indigo-500 text-white font-bold rounded-full shadow-md border-b-4 border-indigo-600 transition-all text-sm flex items-center gap-1">
+                    <span>準備姿勢</span>
+                </button>
+                <button onclick="playStep('star1')" id="btn-step-star1" class="btn-step px-4 py-2 bg-amber-400 hover:bg-amber-500 text-white font-bold rounded-full shadow-md border-b-4 border-amber-600 transition-all text-sm flex items-center gap-1">
+                    <span>1. 大字星星</span>
+                </button>
+                <button onclick="playStep('jump')" id="btn-step-jump" class="btn-step px-4 py-2 bg-emerald-400 hover:bg-emerald-500 text-white font-bold rounded-full shadow-md border-b-4 border-emerald-600 transition-all text-sm flex items-center gap-1">
+                    <span>2. 火箭跳跳</span>
+                </button>
+                <button onclick="playStep('star2')" id="btn-step-star2" class="btn-step px-4 py-2 bg-amber-400 hover:bg-amber-500 text-white font-bold rounded-full shadow-md border-b-4 border-amber-600 transition-all text-sm flex items-center gap-1">
+                    <span>3. 大字星星</span>
+                </button>
+                <button onclick="playStep('soldier')" id="btn-step-soldier" class="btn-step px-4 py-2 bg-rose-400 hover:bg-rose-500 text-white font-bold rounded-full shadow-md border-b-4 border-rose-600 transition-all text-sm flex items-center gap-1">
+                    <span>4. 軍人企</span>
+                </button>
+            </div>
+            
+            <!-- Interactive Action Button -->
+            <button onclick="animateLoop()" id="btn-loop" class="mt-4 w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-black rounded-2xl shadow-lg border-b-4 border-purple-700 transition-all text-base flex items-center justify-center gap-2">
+                <i class="fa-solid fa-play"></i> <span id="loop-btn-text">播放完整連續動作！</span>
+            </button>
+        </div>
+
+        <!-- Steps Instructions Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 w-full px-4">
+            
+            <!-- Step: Reset -->
+            <div onclick="playStep('reset')" class="step-card bg-white border-4 border-indigo-300 rounded-3xl p-4 shadow-lg flex flex-col items-center text-center cursor-pointer relative overflow-hidden">
+                <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-500 text-xl mb-3 border-2 border-indigo-300 wiggle">
+                    <i class="fa-solid fa-arrow-rotate-left"></i>
+                </div>
+                <h2 class="text-lg font-bold text-indigo-600 mb-1">準備姿勢</h2>
+                <p class="text-xs text-slate-600 font-medium leading-relaxed">
+                    雙腳併攏站立，雙手自然放在身體兩側。
+                </p>
+                <span class="mt-3 text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">「預備，開始！」</span>
+            </div>
+
+            <!-- Step 1: Star -->
+            <div onclick="playStep('star1')" class="step-card bg-white border-4 border-amber-300 rounded-3xl p-4 shadow-lg flex flex-col items-center text-center cursor-pointer relative overflow-hidden">
+                <div class="absolute top-2 right-3 text-amber-200 text-4xl font-black select-none">1</div>
+                <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-amber-500 text-xl mb-3 border-2 border-amber-300 wiggle">
+                    <i class="fa-solid fa-star"></i>
+                </div>
+                <h2 class="text-lg font-bold text-amber-600 mb-1">1. 大字星星</h2>
+                <p class="text-xs text-slate-600 font-medium leading-relaxed">
+                    第一步：雙腳向外跳開，同時雙手橫向大字型打開
+                </p>
+                <span class="mt-3 text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-full">「大字型打開！」</span>
+            </div>
+
+            <!-- Step 2: Jump -->
+            <div onclick="playStep('jump')" class="step-card bg-white border-4 border-emerald-300 rounded-3xl p-4 shadow-lg flex flex-col items-center text-center cursor-pointer relative overflow-hidden">
+                <div class="absolute top-2 right-3 text-emerald-200 text-4xl font-black select-none">2</div>
+                <div class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-500 text-xl mb-3 border-2 border-emerald-300 wiggle">
+                    <i class="fa-solid fa-rocket"></i>
+                </div>
+                <h2 class="text-lg font-bold text-emerald-600 mb-1">2. 火箭跳跳</h2>
+                <p class="text-xs text-slate-600 font-medium leading-relaxed">
+                    第二步：雙腳合併，雙手向上舉高過頭
+                </p>
+                <span class="mt-3 text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">「雙手舉高過頭！」</span>
+            </div>
+
+            <!-- Step 3: Star -->
+            <div onclick="playStep('star2')" class="step-card bg-white border-4 border-amber-300 rounded-3xl p-4 shadow-lg flex flex-col items-center text-center cursor-pointer relative overflow-hidden">
+                <div class="absolute top-2 right-3 text-amber-200 text-4xl font-black select-none">3</div>
+                <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-amber-500 text-xl mb-3 border-2 border-amber-300 wiggle">
+                    <i class="fa-solid fa-star"></i>
+                </div>
+                <h2 class="text-lg font-bold text-amber-600 mb-1">3. 大字星星</h2>
+                <p class="text-xs text-slate-600 font-medium leading-relaxed">
+                    第三步：再次雙腳向外跳開，雙手大字型打開
+                </p>
+                <span class="mt-3 text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-full">「再次變身星星！」</span>
+            </div>
+
+            <!-- Step 4: Soldier -->
+            <div onclick="playStep('soldier')" class="step-card bg-white border-4 border-rose-300 rounded-3xl p-4 shadow-lg flex flex-col items-center text-center cursor-pointer relative overflow-hidden">
+                <div class="absolute top-2 right-3 text-rose-200 text-4xl font-black select-none">4</div>
+                <div class="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center text-rose-500 text-xl mb-3 border-2 border-rose-300 wiggle">
+                    <i class="fa-solid fa-person-falling-burst"></i>
+                </div>
+                <h2 class="text-lg font-bold text-rose-600 mb-1">4. 軍人企</h2>
+                <p class="text-xs text-slate-600 font-medium leading-relaxed">
+                    第四步：雙腳合併，雙手垂手放下，放在身體兩側
+                </p>
+                <span class="mt-3 text-xs font-bold text-rose-500 bg-rose-50 px-3 py-1 rounded-full">「立正站好！」</span>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer / Encouragement -->
+    <footer class="text-center my-6">
+        <p class="text-purple-600 font-bold text-lg flex items-center justify-center gap-2">
+            <i class="fa-solid fa-heart text-rose-500 animate-ping"></i> 你做得太棒了！繼續加油跳跳起飛啦！ <i class="fa-solid fa-heart text-rose-500 animate-ping"></i>
+        </p>
+    </footer>
+
+    <!-- Audio Effects (Web Audio API) -->
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'reset') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(200, now + 0.25);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'star') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(600, now + 0.2);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'jump') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(450, now);
+                osc.frequency.exponentialRampToValueAtTime(900, now + 0.15);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'soldier') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            }
+        }
+    </script>
+
+    <!-- Character Pose Controller Script -->
+    <script>
+        const character = document.getElementById('character-body');
+        const armL = document.getElementById('arm-l');
+        const armR = document.getElementById('arm-r');
+        const legL = document.getElementById('leg-l');
+        const legR = document.getElementById('leg-r');
+        const shoeL = document.getElementById('shoe-l');
+        const shoeR = document.getElementById('shoe-r');
+        const mouth = document.getElementById('mouth');
+        const eyeL = document.getElementById('eye-l');
+        const eyeR = document.getElementById('eye-r');
+
+        let isLooping = false;
+        let loopTimeout;
+
+        // Define the poses for each step
+        function playStep(stepKey) {
+            // Highlight active button style
+            document.querySelectorAll('.btn-step').forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-purple-300', 'scale-110');
+            });
+            const activeBtn = document.getElementById(`btn-step-${stepKey}`);
+            if (activeBtn) {
+                activeBtn.classList.add('ring-4', 'ring-purple-300', 'scale-110');
+            }
+
+            if (stepKey === 'reset') {
+                playSound('reset');
+                // Pose: Reset (Landing, arms coming down, knees slightly bent)
+                character.style.transform = "translateY(5px)";
+                armL.setAttribute('d', 'M 85 100 L 65 125');
+                armR.setAttribute('d', 'M 115 100 L 135 125');
+                legL.setAttribute('d', 'M 94 140 L 90 175');
+                legR.setAttribute('d', 'M 108 140 L 112 175');
+                shoeL.setAttribute('d', 'M 84 175 L 92 175');
+                shoeR.setAttribute('d', 'M 110 175 L 118 175');
+                mouth.setAttribute('d', 'M 94 77 Q 100 85 106 77');
+                eyeL.setAttribute('r', '3');
+                eyeR.setAttribute('r', '3');
+            } 
+            else if (stepKey === 'star1' || stepKey === 'star2') {
+                playSound('star');
+                // Pose: Star (Arms wide, legs wide)
+                character.style.transform = "translateY(0px)";
+                armL.setAttribute('d', 'M 85 100 L 50 95');
+                armR.setAttribute('d', 'M 115 100 L 150 95');
+                legL.setAttribute('d', 'M 92 140 L 75 172');
+                legR.setAttribute('d', 'M 108 140 L 125 172');
+                shoeL.setAttribute('d', 'M 68 172 L 77 170');
+                shoeR.setAttribute('d', 'M 123 170 L 132 172');
+                mouth.setAttribute('d', 'M 92 78 Q 100 88 108 78');
+                eyeL.setAttribute('r', '3.5');
+                eyeR.setAttribute('r', '3.5');
+            } 
+            else if (stepKey === 'jump') {
+                playSound('jump');
+                // Pose: Jump (Arms up high, LEGS TOGETHER, jumping up!)
+                character.style.transform = "translateY(-25px)";
+                armL.setAttribute('d', 'M 85 100 L 75 55');
+                armR.setAttribute('d', 'M 115 100 L 125 55');
+                legL.setAttribute('d', 'M 94 140 L 94 175');
+                legR.setAttribute('d', 'M 106 140 L 106 175');
+                shoeL.setAttribute('d', 'M 88 175 L 96 175');
+                shoeR.setAttribute('d', 'M 104 175 L 112 175');
+                mouth.setAttribute('d', 'M 92 75 Q 100 92 108 75');
+                eyeL.setAttribute('r', '4');
+                eyeR.setAttribute('r', '4');
+            } 
+            else if (stepKey === 'soldier') {
+                playSound('soldier');
+                // Pose: Soldier (Arms down, legs together)
+                character.style.transform = "translateY(0px)";
+                armL.setAttribute('d', 'M 85 100 L 80 135');
+                armR.setAttribute('d', 'M 115 100 L 120 135');
+                legL.setAttribute('d', 'M 94 140 L 94 175');
+                legR.setAttribute('d', 'M 106 140 L 106 175');
+                shoeL.setAttribute('d', 'M 88 175 L 96 175');
+                shoeR.setAttribute('d', 'M 104 175 L 112 175');
+                mouth.setAttribute('d', 'M 95 78 Q 100 83 105 78');
+                eyeL.setAttribute('r', '3');
+                eyeR.setAttribute('r', '3');
+            }
+        }
+
+        // Auto-run loop animation (Reset -> Star 1 -> Jump -> Star 2 -> Soldier)
+        function animateLoop() {
+            const loopBtn = document.getElementById('btn-loop');
+            const btnText = document.getElementById('loop-btn-text');
+            
+            if (isLooping) {
+                isLooping = false;
+                clearTimeout(loopTimeout);
+                btnText.innerText = "播放完整連續動作！";
+                loopBtn.classList.remove('from-red-500', 'to-orange-500');
+                loopBtn.classList.add('from-purple-500', 'to-pink-500');
+                playStep('reset');
+            } else {
+                isLooping = true;
+                btnText.innerText = "停止跳躍！";
+                loopBtn.classList.remove('from-purple-500', 'to-pink-500');
+                loopBtn.classList.add('from-red-500', 'to-orange-500');
+                
+                const sequence = ['reset', 'star1', 'jump', 'star2', 'soldier']; 
+                let seqIndex = 0;
+
+                function runNext() {
+                    if (!isLooping) return;
+                    playStep(sequence[seqIndex]);
+                    seqIndex = (seqIndex + 1) % sequence.length;
+                    loopTimeout = setTimeout(runNext, 900); // Slightly slower for better readability of text
+                }
+                runNext();
+            }
+        }
+
+        // Initialize with Reset
+        window.onload = () => {
+            playStep('reset');
+        };
+    </script>
+
+
+</body></html>
